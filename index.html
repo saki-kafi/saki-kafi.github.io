@@ -1,126 +1,244 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NoteMate</title>
+  <title>NoteMate - Classic Notes</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f6fa;
+    :root {
+      --yellow: #ffcc00;
+      --white-frost: rgba(255,255,255,0.7);
+      --frost-border: rgba(255,255,255,0.4);
+      --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+      --accent: #232946;
+      --accent-light: #f4f7fa;
+      --radius: 18px;
+      --transition: 0.22s cubic-bezier(.4,0,.2,1);
     }
-    header {
-      background: #ffcc00;
-      padding: 1rem;
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(120deg, #f8fafc 0%, #ffeabf 100%);
+      min-height: 100vh;
+      color: #232946;
+      transition: background 0.5s;
+    }
+    header, footer {
+      background: var(--yellow);
       text-align: center;
-      font-size: 1.5rem;
       font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      font-size: 1.7rem;
+      letter-spacing: 1.5px;
+      padding: 1.2rem 0;
+      box-shadow: 0 2px 15px 0 rgba(31,38,135,0.10);
+      border-radius: 0 0 var(--radius) var(--radius);
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+    }
+    footer {
+      font-size: 1.1rem;
+      border-radius: var(--radius) var(--radius) 0 0;
+      margin-top: 30px;
+      box-shadow: 0 -2px 15px 0 rgba(31,38,135,0.10);
+      background: linear-gradient(90deg, #ffcc00 70%, #fffbe6 100%);
     }
     #tools {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      padding: 0.5rem;
-      gap: 10px;
-      background: white;
-      border-bottom: 1px solid #ddd;
+      gap: 14px;
+      background: var(--white-frost);
+      padding: 1.1rem 1rem 1rem 1rem;
+      margin: 0 auto 20px auto;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--frost-border);
+      backdrop-filter: blur(9px);
+      max-width: 800px;
     }
-    #tools button, #tools select, #tools input[type="color"], #tools input[type="number"] {
-      padding: 8px;
-      font-size: 1rem;
+    #tools button,
+    #tools select,
+    #tools input[type="color"],
+    #tools input[type="number"] {
+      font-size: 1.05rem;
+      padding: 0.50rem 1.1rem;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 1px 4px rgba(31,38,135,0.06);
+      transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+      outline: none;
+      cursor: pointer;
     }
-    .note {
-      background: white;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      padding: 10px;
-      margin: 10px;
-      width: 90%;
-      max-width: 500px;
-      position: relative;
+    #tools button:hover, #tools select:focus {
+      background: #fffbe6;
+      box-shadow: 0 2px 8px rgba(31,38,135,0.12);
+      transform: translateY(-1px) scale(1.03);
+    }
+    #tools input[type="color"] {
+      padding: 0.2rem;
+      width: 2.1rem;
+      height: 2.1rem;
+      border: 1px solid #ddd;
+      background: transparent;
+      cursor: pointer;
+    }
+    #tools input[type="number"] {
+      width: 3rem;
+      text-align: right;
     }
     #notes {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 10px;
+      gap: 18px;
+      padding: 0 0 35px 0;
+      min-height: 30vh;
+    }
+    .note {
+      background: var(--white-frost);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 16px 22px 12px 22px;
+      max-width: 480px;
+      width: 96%;
+      border: 1.5px solid var(--frost-border);
+      margin-bottom: 6px;
+      position: relative;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+    .note:hover {
+      box-shadow: 0 6px 24px 0 rgba(31,38,135,0.12);
+      transform: translateY(-3px) scale(1.016);
     }
     .note textarea {
       width: 100%;
-      height: 100px;
+      min-height: 85px;
       border: none;
       resize: none;
       outline: none;
-      font-size: 1rem;
+      font-size: 1.04rem;
       background: transparent;
+      color: var(--accent);
+      font-family: inherit;
+      padding: 8px 2px;
+      border-radius: 8px;
+      transition: background var(--transition);
     }
-    .note .controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 6px;
+    .note textarea[readonly] {
+      background: transparent;
+      color: #444;
     }
     .note img, .note audio {
       display: block;
       max-width: 100%;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      margin-top: 2px;
+      box-shadow: 0 1px 7px rgba(31,38,135,0.06);
+    }
+    .note .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 9px;
+      margin-bottom: -2px;
+      align-items: center;
+      justify-content: flex-end;
+      opacity: 0.88;
+    }
+    .note .controls button {
+      display: flex;
+      align-items: center;
+      gap: 0.18rem;
+      padding: 0.30rem 0.70rem;
+      font-size: 0.99rem;
       border-radius: 8px;
-      margin-bottom: 5px;
+      border: none;
+      background: transparent;
+      color: #232946;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .note .controls button:hover {
+      background: #fffbe6;
+      color: #d97706;
+    }
+    .note .controls svg {
+      vertical-align: middle;
+      height: 1.1em;
+      width: 1.1em;
+      opacity: 0.9;
     }
     #drawCanvas {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin: 10px auto;
+      border: 2px solid #ffe082;
+      border-radius: var(--radius);
+      margin: 18px auto 8px auto;
       display: block;
+      box-shadow: 0 2px 10px rgba(255,204,0,0.06);
+      background: #fffbe6;
       touch-action: none;
+      max-width: 99vw;
+      /* user-select: none; */
     }
-    footer {
-      text-align: center;
-      padding: 1rem;
-      background: #ffcc00;
-      font-weight: bold;
-    }
-    .hidden {
-      display: none;
+    @media (max-width: 600px) {
+      #tools, .note { max-width: 99vw; }
+      header, footer { font-size: 1.1rem; }
+      .note { padding: 12px 6px; }
     }
   </style>
 </head>
 <body>
   <header>NoteMate</header>
   <div id="tools">
-    <button onclick="addNote()">Add Text Note</button>
-    <button onclick="addImage()">Insert Image</button>
-    <input type="file" accept="audio/*" onchange="addAudio(event)" />
+    <button onclick="addNote()">📝 Add Text</button>
+    <button onclick="addImage()">🖼️ Image</button>
+    <input type="file" accept="audio/*" onchange="addAudio(event)" style="display:inline-block"/>
     <input type="file" accept="image/*" id="imageInput" hidden onchange="handleImage(event)">
-    <button onclick="toggleCanvas()">Toggle Drawing</button>
-    <select id="fontSelect">
-      <option value="Arial">Arial</option>
+    <button onclick="toggleCanvas()">✏️ Drawing</button>
+    <select id="fontSelect" title="Font">
+      <option value="Inter">Inter</option>
       <option value="Georgia">Georgia</option>
       <option value="Courier New">Courier New</option>
     </select>
     <input type="number" id="fontSize" value="16" min="10" max="72" title="Font size">
-    <input type="color" id="colorPicker" value="#000000">
-    <select id="sizePicker">
+    <input type="color" id="colorPicker" value="#3f3f3f" title="Drawing color">
+    <select id="sizePicker" title="Brush size">
       <option value="2">Small</option>
       <option value="5" selected>Medium</option>
       <option value="10">Large</option>
     </select>
   </div>
-  <canvas id="drawCanvas" width="300" height="200" hidden></canvas>
+  <canvas id="drawCanvas" width="320" height="200" hidden></canvas>
   <div id="notes"></div>
   <footer>Developed with ♥️</footer>
   <script>
     const notes = document.getElementById("notes");
     const fontSelect = document.getElementById("fontSelect");
     const fontSizeInput = document.getElementById("fontSize");
-    let editImgInput = null;
-    let editAudioInput = null;
+    let editImgInput = null, editAudioInput = null;
+
+    function createButton(iconSVG, label, onClick) {
+      const btn = document.createElement("button");
+      btn.innerHTML = iconSVG + " " + label;
+      btn.onclick = onClick;
+      return btn;
+    }
+    // SVG icons
+    const ICON_EDIT = `<svg viewBox="0 0 20 20" fill="none"><path d="M15.2 2.9l1.9 1.9c.4.4.4 1 0 1.4l-9.1 9.1-3.1.3c-.4 0-.7-.3-.7-.7l.3-3.1 9.1-9.1c.4-.4 1-.4 1.4 0z" stroke="currentColor" stroke-width="1.2"/></svg>`;
+    const ICON_SAVE = `<svg viewBox="0 0 20 20" fill="none"><path d="M4 4h12v12H4V4z" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v4h6V4" stroke="currentColor" stroke-width="1.2"/></svg>`;
+    const ICON_DELETE = `<svg viewBox="0 0 20 20" fill="none"><path d="M6 7v7c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V7m2-3H5m3-1h4a1 1 0 0 1 1 1v1H7V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.2"/></svg>`;
+    const ICON_UPLOAD = `<svg viewBox="0 0 20 20" fill="none"><path d="M10 14V6m0 0l-3 3m3-3l3 3" stroke="currentColor" stroke-width="1.2"/><path d="M4 16h12" stroke="currentColor" stroke-width="1.2"/></svg>`;
 
     function addNote() {
       const div = document.createElement("div");
       div.className = "note";
-      // Textarea
       const textarea = document.createElement("textarea");
       textarea.style.fontFamily = fontSelect.value;
       textarea.style.fontSize = fontSizeInput.value + "px";
@@ -129,27 +247,22 @@
       // Controls
       const controls = document.createElement("div");
       controls.className = "controls";
-      // Edit
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "Edit";
-      editBtn.onclick = () => {
-        textarea.readOnly = !textarea.readOnly;
-        textarea.focus();
-        editBtn.textContent = textarea.readOnly ? "Edit" : "Save";
-      };
-      // Delete
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "Delete";
-      delBtn.onclick = () => div.remove();
-      // Styling
-      fontSelect.onchange = () => {
-        textarea.style.fontFamily = fontSelect.value;
-      };
-      fontSizeInput.oninput = () => {
-        textarea.style.fontSize = fontSizeInput.value + "px";
-      };
+      let editing = true;
+      const editBtn = createButton(ICON_SAVE, "Save", toggleEdit);
+      const delBtn = createButton(ICON_DELETE, "Delete", () => div.remove());
+
+      function toggleEdit() {
+        editing = !editing;
+        textarea.readOnly = !editing;
+        editBtn.innerHTML = (editing ? ICON_SAVE + " Save" : ICON_EDIT + " Edit");
+        if (!editing) textarea.focus();
+      }
       controls.appendChild(editBtn);
       controls.appendChild(delBtn);
+
+      fontSelect.onchange = () => textarea.style.fontFamily = fontSelect.value;
+      fontSizeInput.oninput = () => textarea.style.fontSize = fontSizeInput.value + "px";
+
       div.appendChild(textarea);
       div.appendChild(controls);
       notes.appendChild(div);
@@ -166,24 +279,18 @@
         const reader = new FileReader();
         reader.onload = function (evt) {
           if (editingDiv) {
-            // Editing existing image note
             editingDiv.querySelector("img").src = evt.target.result;
           } else {
-            // New image note
             const img = document.createElement("img");
             img.src = evt.target.result;
-            img.style.maxWidth = "100%";
-            img.style.borderRadius = "8px";
             const div = document.createElement("div");
             div.className = "note";
             div.appendChild(img);
             // Controls
             const controls = document.createElement("div");
             controls.className = "controls";
-            // Edit
-            const editBtn = document.createElement("button");
-            editBtn.textContent = "Edit";
-            editBtn.onclick = () => {
+
+            const editBtn = createButton(ICON_UPLOAD, "Change", () => {
               editImgInput = document.createElement("input");
               editImgInput.type = "file";
               editImgInput.accept = "image/*";
@@ -195,11 +302,8 @@
                 editImgInput = null;
               };
               editImgInput.click();
-            };
-            // Delete
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "Delete";
-            delBtn.onclick = () => div.remove();
+            });
+            const delBtn = createButton(ICON_DELETE, "Delete", () => div.remove());
             controls.appendChild(editBtn);
             controls.appendChild(delBtn);
             div.appendChild(controls);
@@ -224,10 +328,7 @@
         // Controls
         const controls = document.createElement("div");
         controls.className = "controls";
-        // Edit
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "Edit";
-        editBtn.onclick = () => {
+        const editBtn = createButton(ICON_UPLOAD, "Change", () => {
           editAudioInput = document.createElement("input");
           editAudioInput.type = "file";
           editAudioInput.accept = "audio/*";
@@ -246,11 +347,8 @@
             editAudioInput = null;
           };
           editAudioInput.click();
-        };
-        // Delete
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "Delete";
-        delBtn.onclick = () => div.remove();
+        });
+        const delBtn = createButton(ICON_DELETE, "Delete", () => div.remove());
         controls.appendChild(editBtn);
         controls.appendChild(delBtn);
         div.appendChild(controls);
@@ -259,7 +357,7 @@
       reader.readAsDataURL(file);
     }
 
-    // Drawing canvas functions
+    // Drawing canvas functions: works for both mouse and touch!
     let canvasInitialized = false;
     function toggleCanvas() {
       const canvas = document.getElementById("drawCanvas");
@@ -269,35 +367,45 @@
         canvasInitialized = true;
       }
     }
-
     function initCanvas() {
       const canvas = document.getElementById("drawCanvas");
       const ctx = canvas.getContext("2d");
       let painting = false;
 
-      const getMousePos = (e) => {
+      // Get mouse or touch position relative to canvas
+      function getPos(e) {
         const rect = canvas.getBoundingClientRect();
-        return {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        };
-      };
+        if (e.touches) {
+          return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+          };
+        } else {
+          return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+          };
+        }
+      }
 
+      // Mouse events
       canvas.addEventListener("mousedown", (e) => {
         painting = true;
         ctx.beginPath();
-        const { x, y } = getMousePos(e);
+        const { x, y } = getPos(e);
         ctx.moveTo(x, y);
       });
-
       canvas.addEventListener("mouseup", () => {
         painting = false;
         ctx.beginPath();
       });
-
+      canvas.addEventListener("mouseleave", () => {
+        painting = false;
+        ctx.beginPath();
+      });
       canvas.addEventListener("mousemove", (e) => {
         if (!painting) return;
-        const { x, y } = getMousePos(e);
+        const { x, y } = getPos(e);
         ctx.strokeStyle = document.getElementById("colorPicker").value;
         ctx.lineWidth = document.getElementById("sizePicker").value;
         ctx.lineCap = "round";
@@ -306,7 +414,38 @@
         ctx.beginPath();
         ctx.moveTo(x, y);
       });
+
+      // Touch events
+      canvas.addEventListener("touchstart", (e) => {
+        painting = true;
+        ctx.beginPath();
+        const { x, y } = getPos(e);
+        ctx.moveTo(x, y);
+        e.preventDefault();
+      }, { passive: false });
+      canvas.addEventListener("touchend", (e) => {
+        painting = false;
+        ctx.beginPath();
+        e.preventDefault();
+      }, { passive: false });
+      canvas.addEventListener("touchcancel", (e) => {
+        painting = false;
+        ctx.beginPath();
+        e.preventDefault();
+      }, { passive: false });
+      canvas.addEventListener("touchmove", (e) => {
+        if (!painting) return;
+        const { x, y } = getPos(e);
+        ctx.strokeStyle = document.getElementById("colorPicker").value;
+        ctx.lineWidth = document.getElementById("sizePicker").value;
+        ctx.lineCap = "round";
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        e.preventDefault();
+      }, { passive: false });
     }
   </script>
 </body>
-  </html>
+</html>
