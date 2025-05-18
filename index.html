@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoteMate</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f6fa;
+    }
+    header {
+      background: #ffcc00;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #tools {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0.5rem;
+      gap: 10px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+    #tools button, #tools select, #tools input[type="color"], #tools input[type="number"] {
+      padding: 8px;
+      font-size: 1rem;
+    }
+    .note {
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+    }
+    #notes {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+    .note textarea {
+      width: 100%;
+      height: 100px;
+      border: none;
+      resize: none;
+      outline: none;
+      font-size: 1rem;
+      background: transparent;
+    }
+    .note .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .note img, .note audio {
+      display: block;
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+    #drawCanvas {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin: 10px auto;
+      display: block;
+      touch-action: none;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #ffcc00;
+      font-weight: bold;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>NoteMate</header>
+  <div id="tools">
+    <button onclick="addNote()">Add Text Note</button>
+    <button onclick="addImage()">Insert Image</button>
+    <input type="file" accept="audio/*" onchange="addAudio(event)" />
+    <input type="file" accept="image/*" id="imageInput" hidden onchange="handleImage(event)">
+    <button onclick="toggleCanvas()">Toggle Drawing</button>
+    <select id="fontSelect">
+      <option value="Arial">Arial</option>
+      <option value="Georgia">Georgia</option>
+      <option value="Courier New">Courier New</option>
+    </select>
+    <input type="number" id="fontSize" value="16" min="10" max="72" title="Font size">
+    <input type="color" id="colorPicker" value="#000000">
+    <select id="sizePicker">
+      <option value="2">Small</option>
+      <option value="5" selected>Medium</option>
+      <option value="10">Large</option>
+    </select>
+  </div>
+  <canvas id="drawCanvas" width="300" height="200" hidden></canvas>
+  <div id="notes"></div>
+  <footer>Developed with ♥️</footer>
+  <script>
+    const notes = document.getElementById("notes");
+    const fontSelect = document.getElementById("fontSelect");
+    const fontSizeInput = document.getElementById("fontSize");
+    let editImgInput = null;
+    let editAudioInput = null;
+
+    function addNote() {
+      const div = document.createElement("div");
+      div.className = "note";
+      // Textarea
+      const textarea = document.createElement("textarea");
+      textarea.style.fontFamily = fontSelect.value;
+      textarea.style.fontSize = fontSizeInput.value + "px";
+      textarea.readOnly = false;
+      textarea.placeholder = "Type your note here...";
+      // Controls
+      const controls = document.createElement("div");
+      controls.className = "controls";
+      // Edit
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.onclick = () => {
+        textarea.readOnly = !textarea.readOnly;
+        textarea.focus();
+        editBtn.textContent = textarea.readOnly ? "Edit" : "Save";
+      };
+      // Delete
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.onclick = () => div.remove();
+      // Styling
+      fontSelect.onchange = () => {
+        textarea.style.fontFamily = fontSelect.value;
+      };
+      fontSizeInput.oninput = () => {
+        textarea.style.fontSize = fontSizeInput.value + "px";
+      };
+      controls.appendChild(editBtn);
+      controls.appendChild(delBtn);
+      div.appendChild(textarea);
+      div.appendChild(controls);
+      notes.appendChild(div);
+    }
+
+    function addImage() {
+      document.getElementById("imageInput").value = "";
+      document.getElementById("imageInput").click();
+    }
+
+    function handleImage(e, editingDiv = null) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (evt) {
+          if (editingDiv) {
+            // Editing existing image note
+            editingDiv.querySelector("img").src = evt.target.result;
+          } else {
+            // New image note
+            const img = document.createElement("img");
+            img.src = evt.target.result;
+            img.style.maxWidth = "100%";
+            img.style.borderRadius = "8px";
+            const div = document.createElement("div");
+            div.className = "note";
+            div.appendChild(img);
+            // Controls
+            const controls = document.createElement("div");
+            controls.className = "controls";
+            // Edit
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.onclick = () => {
+              editImgInput = document.createElement("input");
+              editImgInput.type = "file";
+              editImgInput.accept = "image/*";
+              editImgInput.className = "hidden";
+              document.body.appendChild(editImgInput);
+              editImgInput.onchange = ev => {
+                handleImage(ev, div);
+                document.body.removeChild(editImgInput);
+                editImgInput = null;
+              };
+              editImgInput.click();
+            };
+            // Delete
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "Delete";
+            delBtn.onclick = () => div.remove();
+            controls.appendChild(editBtn);
+            controls.appendChild(delBtn);
+            div.appendChild(controls);
+            notes.appendChild(div);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function addAudio(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.src = evt.target.result;
+        const div = document.createElement("div");
+        div.className = "note";
+        div.appendChild(audio);
+        // Controls
+        const controls = document.createElement("div");
+        controls.className = "controls";
+        // Edit
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.onclick = () => {
+          editAudioInput = document.createElement("input");
+          editAudioInput.type = "file";
+          editAudioInput.accept = "audio/*";
+          editAudioInput.className = "hidden";
+          document.body.appendChild(editAudioInput);
+          editAudioInput.onchange = ev => {
+            const newFile = ev.target.files[0];
+            if (newFile) {
+              const newReader = new FileReader();
+              newReader.onload = function (ev2) {
+                audio.src = ev2.target.result;
+              };
+              newReader.readAsDataURL(newFile);
+            }
+            document.body.removeChild(editAudioInput);
+            editAudioInput = null;
+          };
+          editAudioInput.click();
+        };
+        // Delete
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.onclick = () => div.remove();
+        controls.appendChild(editBtn);
+        controls.appendChild(delBtn);
+        div.appendChild(controls);
+        notes.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Drawing canvas functions
+    let canvasInitialized = false;
+    function toggleCanvas() {
+      const canvas = document.getElementById("drawCanvas");
+      canvas.hidden = !canvas.hidden;
+      if (!canvasInitialized) {
+        initCanvas();
+        canvasInitialized = true;
+      }
+    }
+
+    function initCanvas() {
+      const canvas = document.getElementById("drawCanvas");
+      const ctx = canvas.getContext("2d");
+      let painting = false;
+
+      const getMousePos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      };
+
+      canvas.addEventListener("mousedown", (e) => {
+        painting = true;
+        ctx.beginPath();
+        const { x, y } = getMousePos(e);
+        ctx.moveTo(x, y);
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        painting = false;
+        ctx.beginPath();
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        if (!painting) return;
+        const { x, y } = getMousePos(e);
+        ctx.strokeStyle = document.getElementById("colorPicker").value;
+        ctx.lineWidth = document.getElementById("sizePicker").value;
+        ctx.lineCap = "round";
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      });
+    }
+  </script>
+</body>
+  </html>
